@@ -1,27 +1,39 @@
+data "aws_vpc" "default" {
+  default = true
+}
+
+data "aws_subnets" "default" {
+
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
+}
+
 module "ecr" {
   source = "./modules/ecr"
 
-  repository_name = var.repository_name
+  repository_name = "devops-ecr"
 }
 
 module "ec2" {
+
   source = "./modules/ec2"
 
-  instance_type = var.instance_type
-  key_name = var.key_name
-  subnet_id = var.public_subnets[0]
-  vpc_id = var.vpc_id
+  subnet_id = data.aws_subnets.default.ids[0]
+
 }
 
 module "eks" {
+
   source = "./modules/eks"
 
-  cluster_name = var.cluster_name
-  subnet_ids = var.private_subnets
+  subnet_ids = data.aws_subnets.default.ids
+
 }
 
 module "lambda" {
+
   source = "./modules/lambda"
 
-  function_name = "user-registration"
 }
