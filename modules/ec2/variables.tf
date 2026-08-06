@@ -1,1 +1,3 @@
-variable "subnet_id" {}
+variable "subnet_id" {
+  type = string
+}
