@@ -1,47 +1,47 @@
-data "aws_ami" "ubuntu" {
+##########################################################
+# Get Latest Ubuntu 22.04 AMI
+##########################################################
 
-  most_recent = true
-
-  owners = ["099720109477"]   # Canonical Ubuntu
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd-gp3/ubuntu-jammy-22.04-amd64-server-*"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  filter {
-    name   = "architecture"
-    values = ["x86_64"]
-  }
+data "aws_ssm_parameter" "ubuntu_ami" {
+  name = "/aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp3/ami-id"
 }
 
-resource "aws_security_group" "ec2" {
+##########################################################
+# Security Group
+##########################################################
 
-  name = "ec2-sg"
+resource "aws_security_group" "ec2_sg" {
+
+  name        = "ec2-sg"
+  description = "Security Group for EC2"
+  vpc_id      = data.aws_vpc.default.id
 
   ingress {
+    description = "SSH"
+
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
+
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
+    description = "HTTP"
+
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
+
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
+
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
+
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -50,18 +50,33 @@ resource "aws_security_group" "ec2" {
   }
 }
 
+##########################################################
+# Default VPC
+##########################################################
+
+data "aws_vpc" "default" {
+  default = true
+}
+
+##########################################################
+# EC2 Instance
+##########################################################
+
 resource "aws_instance" "server" {
 
-  ami                         = data.aws_ami.ubuntu.id
-  instance_type               = "t3.micro"
-  subnet_id                   = var.subnet_id
+  ami                    = data.aws_ssm_parameter.ubuntu_ami.value
+  instance_type          = "t3.micro"
+
+  subnet_id = var.subnet_id
+
   associate_public_ip_address = true
 
   vpc_security_group_ids = [
-    aws_security_group.ec2.id
+    aws_security_group.ec2_sg.id
   ]
 
   tags = {
     Name = "Terraform-EC2"
   }
+
 }
