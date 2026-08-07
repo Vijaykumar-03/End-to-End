@@ -1,3 +1,4 @@
 variable "subnet_id" {
-  type = string
+  description = "Subnet ID for EC2"
+  type        = string
 }
