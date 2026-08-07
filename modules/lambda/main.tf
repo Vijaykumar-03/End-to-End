@@ -1,5 +1,10 @@
+##########################################################
+# IAM Role
+##########################################################
+
 resource "aws_iam_role" "lambda_role" {
-  name = "lambda-role"
+
+  name_prefix = "lambda-role-"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -16,12 +21,26 @@ resource "aws_iam_role" "lambda_role" {
       }
     ]
   })
+
+  tags = {
+    Name = "lambda-role"
+  }
 }
 
+##########################################################
+# Attach Basic Execution Policy
+##########################################################
+
 resource "aws_iam_role_policy_attachment" "basic_execution" {
-  role       = aws_iam_role.lambda_role.name
+
+  role = aws_iam_role.lambda_role.name
+
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
+
+##########################################################
+# Lambda Function
+##########################################################
 
 resource "aws_lambda_function" "lambda" {
 
@@ -34,4 +53,12 @@ resource "aws_lambda_function" "lambda" {
   runtime = "python3.12"
 
   role = aws_iam_role.lambda_role.arn
+
+  depends_on = [
+    aws_iam_role_policy_attachment.basic_execution
+  ]
+
+  tags = {
+    Name = "user-registration"
+  }
 }
