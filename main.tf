@@ -1,39 +1,36 @@
-data "aws_vpc" "default" {
-  default = true
+resource "aws_iam_role" "lambda" {
+  name = "lambda-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+
+    Statement = [
+      {
+        Effect = "Allow"
+
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
 }
 
-data "aws_subnets" "default" {
-
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.default.id]
-  }
+resource "aws_iam_role_policy_attachment" "basic" {
+  role       = aws_iam_role.lambda.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-module "ecr" {
-  source = "./modules/ecr"
+resource "aws_lambda_function" "lambda" {
+  function_name = "user-registration"
 
-  repository_name = "devops-ecr"
-}
+  filename         = "${path.module}/lambda.zip"
+  source_code_hash = filebase64sha256("${path.module}/lambda.zip")
 
-module "ec2" {
+  handler = "lambda.lambda_handler"
+  runtime = "python3.12"
 
-  source = "./modules/ec2"
-
-  subnet_id = data.aws_subnets.default.ids[0]
-
-}
-
-module "eks" {
-
-  source = "./modules/eks"
-
-  subnet_ids = data.aws_subnets.default.ids
-
-}
-
-module "lambda" {
-
-  source = "./modules/lambda"
-
+  role = aws_iam_role.lambda.arn
 }
