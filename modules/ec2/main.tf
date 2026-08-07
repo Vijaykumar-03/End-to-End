@@ -1,5 +1,5 @@
 ##########################################################
-# Default VPC
+# Get Default VPC
 ##########################################################
 
 data "aws_vpc" "default" {
@@ -17,21 +17,17 @@ resource "aws_security_group" "ec2_sg" {
 
   ingress {
     description = "SSH"
-
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
     description = "HTTP"
-
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -39,7 +35,6 @@ resource "aws_security_group" "ec2_sg" {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -59,7 +54,8 @@ resource "aws_instance" "server" {
 
   instance_type = "t3.micro"
 
-  subnet_id                   = var.subnet_id
+  subnet_id = var.subnet_id
+
   associate_public_ip_address = true
 
   vpc_security_group_ids = [
