@@ -52,7 +52,7 @@ resource "aws_instance" "server" {
   # Ubuntu 24.04 LTS (ap-south-2)
   ami = "ami-001af333c5cf65178"
 
-  instance_type = "t3.micro"
+  instance_type = "m7i-flex.large"
 
   subnet_id = var.subnet_id
 
