@@ -12,11 +12,11 @@ module "eks" {
 
   eks_managed_node_groups = {
     worker = {
-      instance_types = ["t3.micro"]
+      instance_types = ["m7i-flex.large"]
 
       min_size     = 1
-      desired_size = 10
-      max_size     = 10
+      desired_size = 5
+      max_size     = 5
 
       capacity_type = "ON_DEMAND"
     }
